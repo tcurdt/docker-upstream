@@ -15,9 +15,9 @@ release/$(NAME)_$(VERSION)_linux_$(HARDWARE).tgz:
 clean:
 	rm -rf release
 
-release:
+release: all
 	git tag $(TAG)
 	git push --tags
-	~/bin/gh-release-upload $(TAG) tcurdt/docker-upstream $(NAME)
+	~/bin/gh-release-upload $(TAG) tcurdt docker-upstream release/$(NAME)_$(VERSION)_linux_$(HARDWARE).tgz
 
 .PHONY: all clean release

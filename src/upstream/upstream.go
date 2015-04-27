@@ -7,7 +7,7 @@ import (
   "strings"
   "io/ioutil"
   "crypto/sha1"
-	"path/filepath"
+  "path/filepath"
   "text/template"
   dockerapi "github.com/fsouza/go-dockerclient"
   flags "github.com/jessevdk/go-flags"
@@ -29,18 +29,12 @@ type Options struct {
 }
 
 var options Options
-var hash_old []byte
+var config_hash_old []byte
 
-func http_ports(env []string) []string {
-  for _, e := range env {
-    tokens := strings.Split(e, "=")
-    if tokens[0] == "UPSTREAM" {
-      ports := strings.Split(tokens[1], ",")
-      for i, s := range ports { ports[i] = s + "/tcp" }
-      return ports
-    }
-  }
-  return []string{};
+func upstream_ports(list string) []string {
+  ports := strings.Split(list, ",")
+  for i, s := range ports { ports[i] = s + "/tcp" }
+  return ports
 }
 
 func signal_container(client *dockerapi.Client, container *dockerapi.Container, signal dockerapi.Signal) {
@@ -99,18 +93,29 @@ func update(client *dockerapi.Client) {
       containers_to_restart = append(containers_to_restart, container)
     }
 
-    ports := http_ports(container.Config.Env)
     if container.State.Running {
-      for port,bindings := range container.NetworkSettings.Ports {
-        if matches(string(port), ports) {
-          for _, binding := range bindings {
-            // log.Println("info: container", container.Name, "has upstream", port)
-            upstreams = append(upstreams, &Upstream{
-              Name: name,
-              Type: filepath.Base(container.Config.Image),
-              Host: binding.HostIP,
-              Port: binding.HostPort,
-            })
+      // running container
+
+      label := container.Config.Labels["org.vafer.upstream"]
+
+      if label != "" {
+        // upstream label found, extract ports
+
+        ports := upstream_ports(label)
+
+        for port,bindings := range container.HostConfig.PortBindings {
+          if matches(string(port), ports) {
+
+            // port matches, create upstream
+            for _, binding := range bindings {
+              upstreams = append(upstreams, &Upstream{
+                Name: name,
+                Type: filepath.Base(container.Config.Image),
+                Host: binding.HostIP,
+                Port: binding.HostPort,
+              })
+            }
+
           }
         }
       }
@@ -121,10 +126,10 @@ func update(client *dockerapi.Client) {
 
   write_output_from_template(string(options.Template), upstreams, &output)
 
-  hash_new := sha1.Sum(output.Bytes())
+  config_hash_new := sha1.Sum(output.Bytes())
 
-  if !bytes.Equal(hash_old, hash_new[:]) {
-    hash_old = hash_new[:]
+  if !bytes.Equal(config_hash_old, config_hash_new[:]) {
+    config_hash_old = config_hash_new[:]
 
     log.Println("info: new configuration file")
 

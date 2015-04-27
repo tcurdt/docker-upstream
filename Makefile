@@ -2,34 +2,35 @@ NAME     := upstream
 HARDWARE := $(shell uname -m)
 VERSION  := $(shell cat src/upstream/VERSION)
 TAG      := v$(VERSION)
+TOKEN    := $(shell cat $$HOME/.github-release)
+ARCHIVE  := $(NAME)_$(VERSION)_linux_$(HARDWARE).tgz
 
-OBJECTS  := release/$(NAME)_$(VERSION)_linux_$(HARDWARE).tgz
+OBJECTS  := release/$(ARCHIVE)
 
 all: $(OBJECTS)
 
 build:
 	GOOS=linux go build upstream
 
-release/$(NAME)_$(VERSION)_linux_$(HARDWARE).tgz:
+release/$(ARCHIVE):
 	source `type -p gvp`
 	gpm install
 	mkdir -p release
 	GOOS=linux go build -o release/$(NAME) upstream
-	cd release && tar -czf $(NAME)_$(VERSION)_linux_$(HARDWARE).tgz $(NAME)
+	cd release && tar -czf $(ARCHIVE) $(NAME)
 	rm release/$(NAME)
 
 clean:
 	rm -rf release
 
 release: all
-	git tag $(TAG)
+	git tag -f -a "$(TAG)" -m "release $(TAG)"
 	git push --tags
-	FILENAME=$(NAME)_$(VERSION)_linux_$(HARDWARE).tgz
-	GITHUB_TOKEN=`cat $HOME/.github-release` github-release upload \
+	GITHUB_TOKEN=$(TOKEN) github-release upload \
 		--user tcurdt \
 		--repo docker-upstream \
 		--tag $(TAG) \
-		--name $(FILENAME) \
-		--file release/$(FILENAME)
+		--name $(ARCHIVE) \
+		--file release/$(ARCHIVE)
 
 .PHONY: all clean release build

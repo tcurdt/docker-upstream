@@ -1,7 +1,7 @@
 NAME     := upstream
 HARDWARE := $(shell uname -m)
 VERSION  := $(shell cat src/upstream/VERSION)
-TAG      := v$(VERSION)
+TAG      := $(VERSION)
 TOKEN    := $(shell cat $$HOME/.github-release)
 ARCHIVE  := $(NAME)_$(VERSION)_linux_$(HARDWARE).tgz
 

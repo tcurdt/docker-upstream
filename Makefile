@@ -9,9 +9,6 @@ OBJECTS  := release/$(ARCHIVE)
 
 all: $(OBJECTS)
 
-build:
-	GOOS=linux go build upstream
-
 release/$(ARCHIVE):
 	source `type -p gvp`
 	gpm install
@@ -23,11 +20,13 @@ release/$(ARCHIVE):
 clean:
 	rm -rf release
 
-tag:
+release: $(ARCHIVE)
 	git tag -f -a "$(TAG)" -m "release $(TAG)"
-
-release:
 	git push --tags
+	GITHUB_TOKEN=$(TOKEN) github-release release \
+		--user tcurdt \
+		--repo docker-upstream \
+		--tag $(TAG)
 	GITHUB_TOKEN=$(TOKEN) github-release upload \
 		--user tcurdt \
 		--repo docker-upstream \
@@ -35,4 +34,4 @@ release:
 		--name $(ARCHIVE) \
 		--file release/$(ARCHIVE)
 
-.PHONY: all build clean tag release 
+.PHONY: all clean release 

@@ -20,7 +20,7 @@ release/$(ARCHIVE):
 clean:
 	rm -rf release
 
-release: $(ARCHIVE)
+release: all
 	git tag -f -a "$(TAG)" -m "release $(TAG)"
 	git push --tags
 	GITHUB_TOKEN=$(TOKEN) github-release release \

@@ -23,8 +23,10 @@ release/$(ARCHIVE):
 clean:
 	rm -rf release
 
-release: all
+tag:
 	git tag -f -a "$(TAG)" -m "release $(TAG)"
+
+release:
 	git push --tags
 	GITHUB_TOKEN=$(TOKEN) github-release upload \
 		--user tcurdt \
@@ -33,4 +35,4 @@ release: all
 		--name $(ARCHIVE) \
 		--file release/$(ARCHIVE)
 
-.PHONY: all clean release build
+.PHONY: all build clean tag release 

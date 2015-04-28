@@ -15,4 +15,4 @@ COPY src/upstream/nginx.tpl /srv/upstream/nginx.tpl
 
 WORKDIR /srv/upstream
 
-ENTRYPOINT [ "upstream", "--output", "/srv/upstream/generated", "--reload", "nginx", "--template", "nginx.tpl" ]
+ENTRYPOINT [ "upstream", "--output", "/srv/upstream/generated", "--reload", "nginx", "--template", "nginx.tpl", "--follow" ]

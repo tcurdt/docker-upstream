@@ -26,11 +26,19 @@ Now `upstream` generates the missing upstream configuration bit based on the doc
       --reload nginx \
       --template nginx.tpl
 
-Typically you would run upstream inside a container itself as well.
+Typically you would run upstream inside a container itself as well
 
     docker run --name upstream \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v /etc/nginx/upstream.d/generated:/srv/upstream/generated \
       -dt tcurdt/upstream
+
+but you could also just run it manually
+
+    upstream \
+      --output /srv/upstream/generated \
+      --reload nginx \
+      --template nginx.tpl \
+      --follow # monitor docker containers
 
 The code is released under the Apache License 2.0.

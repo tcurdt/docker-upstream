@@ -21,11 +21,12 @@ type Upstream struct {
 }
 
 type Options struct {
-  Docker string `long:"docker" description:"connection to docker" default:"unix:///var/run/docker.sock"`
+  Follow bool `short:"f" long:"follow" description:""`
+  Docker string `short:"d" long:"docker" description:"connection to docker" default:"unix:///var/run/docker.sock"`
   Reload []string `long:"reload" description:"reload container on config change"`
   Restart []string `long:"restart" description:"restart container on config change"`
-  Template flags.Filename `long:"template" description:"template for config" required:"true"`
-  Output flags.Filename `long:"output" description:"filename for output" required:"true"`
+  Template flags.Filename `short:"t" long:"template" description:"template for config" required:"true"`
+  Output flags.Filename `short:"o" long:"output" description:"filename for output" required:"true"`
 }
 
 var options Options
@@ -167,15 +168,18 @@ func main() {
 
   update(docker)
 
-  events := make(chan *dockerapi.APIEvents)
-  assert(docker.AddEventListener(events))
+  if options.Follow {
 
-  log.Println("info: listening for docker events...")
+    events := make(chan *dockerapi.APIEvents)
+    assert(docker.AddEventListener(events))
 
-  for event := range events {
-    _ = event
-    go update(docker)
+    log.Println("info: listening for docker events...")
+
+    for event := range events {
+      _ = event
+      go update(docker)
+    }
+
+    log.Fatal("fatal: docker event loop closed")
   }
-
-  log.Fatal("fatal: docker event loop closed")
 }

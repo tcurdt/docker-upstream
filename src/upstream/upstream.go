@@ -21,7 +21,8 @@ type Upstream struct {
 }
 
 type Options struct {
-  Follow bool `short:"f" long:"follow" description:""`
+  Verbose bool `short:"v" long:"verbose" description:"verbose"`
+  Follow bool `short:"f" long:"follow" description:"follow"`
   Docker string `short:"d" long:"docker" description:"connection to docker" default:"unix:///var/run/docker.sock"`
   Reload []string `long:"reload" description:"reload container on config change"`
   Restart []string `long:"restart" description:"restart container on config change"`
@@ -102,13 +103,22 @@ func update(client *dockerapi.Client) {
       if label != "" {
         // upstream label found, extract ports
 
+        if options.Verbose {
+          log.Println("container: ", name, " has label:", label)
+        }
+
         ports := upstream_ports(label)
 
-        for port,bindings := range container.HostConfig.PortBindings {
+        for port,bindings := range container.NetworkSettings.Ports {
           if matches(string(port), ports) {
 
             // port matches, create upstream
             for _, binding := range bindings {
+
+              if options.Verbose {
+                log.Println("upstream: ", binding.HostIP, "/", binding.HostPort)
+              }
+              
               upstreams = append(upstreams, &Upstream{
                 Name: name,
                 Type: filepath.Base(container.Config.Image),
@@ -132,7 +142,9 @@ func update(client *dockerapi.Client) {
   if !bytes.Equal(config_hash_old, config_hash_new[:]) {
     config_hash_old = config_hash_new[:]
 
-    log.Println("info: new configuration file")
+    if options.Verbose {
+      log.Println("info: new configuration file")
+    }
 
     err = ioutil.WriteFile(string(options.Output), output.Bytes(), 0644)
     if err != nil {
@@ -173,7 +185,9 @@ func main() {
     events := make(chan *dockerapi.APIEvents)
     assert(docker.AddEventListener(events))
 
-    log.Println("info: listening for docker events...")
+    if options.Verbose {
+      log.Println("info: listening for docker events...")
+    }
 
     for event := range events {
       _ = event

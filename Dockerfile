@@ -1,6 +1,6 @@
 FROM tcurdt/busybox
 
-ENV UPSTREAM_VERSION 1.1.0
+ENV UPSTREAM_VERSION 1.1.1
 
 RUN opkg-install \
     curl ca-certificates \

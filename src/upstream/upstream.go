@@ -112,7 +112,7 @@ func update(client *dockerapi.Client) {
               upstreams = append(upstreams, &Upstream{
                 Name: name,
                 Type: filepath.Base(container.Config.Image),
-                Host: binding.HostIP,
+                Host: binding.HostIp,
                 Port: binding.HostPort,
               })
             }

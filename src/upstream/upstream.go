@@ -23,6 +23,7 @@ type Upstream struct {
 type Options struct {
   Verbose bool `short:"v" long:"verbose" description:"verbose"`
   Follow bool `short:"f" long:"follow" description:"follow"`
+  Label string `short:"l" long:"label" description:"label for filtering the containers" default:"org.vafer.upstream"`
   Docker string `short:"d" long:"docker" description:"connection to docker" default:"unix:///var/run/docker.sock"`
   Reload []string `long:"reload" description:"reload container on config change"`
   Restart []string `long:"restart" description:"restart container on config change"`
@@ -98,7 +99,7 @@ func update(client *dockerapi.Client) {
     if container.State.Running {
       // running container
 
-      label := container.Config.Labels["org.vafer.upstream"]
+      label := container.Config.Labels[options.Label]
 
       if label != "" {
         // upstream label found, extract ports
@@ -177,6 +178,10 @@ func main() {
 
   docker, err := dockerapi.NewClient(options.Docker)
   assert(err)
+
+  if options.Verbose {
+    log.Println("info: looking for container with label:", options.Label)
+  }
 
   update(docker)
 

@@ -1,4 +1,4 @@
-NAME       := upstream
+NAME       := dockerx-upstream
 HARDWARE   := $(shell uname -m)
 VERSION    := $(shell cat src/upstream/VERSION)
 TAG        := $(VERSION)
@@ -23,8 +23,8 @@ build/$(TGZ_LINUX): .godeps
 	cd build && tar -czf $(TGZ_LINUX) $(NAME)
 	mv build/$(NAME) build/$(NAME)-linux
 
-boot2docker: build/$(TGZ_LINUX)
-	scp -i ~/.ssh/id_boot2docker build/$(NAME)-linux docker@`boot2docker ip`:
+copy: build/$(TGZ_LINUX)
+	docker-machine scp build/$(NAME)-linux dev:
 
 build/$(TGZ_DARWIN): .godeps
 	mkdir -p build
@@ -37,19 +37,19 @@ release: all
 	git push --tags
 	GITHUB_TOKEN=$(TOKEN) github-release release \
 		--user tcurdt \
-		--repo docker-upstream \
+		--repo $(NAME) \
 		--tag $(TAG)
 	GITHUB_TOKEN=$(TOKEN) github-release upload \
 		--user tcurdt \
-		--repo docker-upstream \
+		--repo $(NAME) \
 		--tag $(TAG) \
 		--name $(TGZ_LINUX) \
 		--file build/$(TGZ_LINUX)
 	GITHUB_TOKEN=$(TOKEN) github-release upload \
 		--user tcurdt \
-		--repo docker-upstream \
+		--repo $(NAME) \
 		--tag $(TAG) \
 		--name $(TGZ_DARWIN) \
 		--file build/$(TGZ_DARWIN)
 
-.PHONY: all clean release boot2docker
+.PHONY: all clean release copy

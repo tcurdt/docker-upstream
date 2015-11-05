@@ -15,4 +15,5 @@ COPY src/upstream/nginx.tpl /srv/dockerx-upstream/nginx.tpl
 
 WORKDIR /srv/dockerx-upstream
 
-ENTRYPOINT [ "--template", "/srv/dockerx-upstream/nginx.tpl", "upstream", "--output", "/srv/dockerx-upstream/generated", "--label", "org.vafer.upstream", "--reload", "nginx", "--follow" ]
+ENTRYPOINT [ "dockerx-upstream" ]
+CMD [ "--template", "/srv/dockerx-upstream/nginx.tpl", "upstream", "--output", "/srv/dockerx-upstream/generated", "--label", "org.vafer.upstream", "--reload", "nginx", "--follow" ]

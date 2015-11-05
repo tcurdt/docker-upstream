@@ -23,8 +23,8 @@ Now `upstream` generates the missing upstream configuration bit based on the doc
 
     upstream \
       --label org.vafer.upstream \
-      --template /srv/upstream/nginx.tpl \
-      --output /srv/upstream/generated \
+      --template /some/nginx.tpl \
+      --output /other/generated \
       --reload nginx
       --follow # monitor docker containers
 
@@ -32,7 +32,7 @@ Typically you would run upstream inside a container itself as well
 
     docker run --name upstream \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -v /etc/nginx/upstream.d/generated:/srv/upstream/generated \
+      -v /etc/nginx/upstream.d/generated:/srv/dockerx-upstream/generated \
       -dt tcurdt/dockerx-upstream \
       --label org.vafer.upstream \
       --template /srv/dockerx-upstream/nginx.tpl \
@@ -44,7 +44,7 @@ or just as a one-off command
 
     docker run --name upstream \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -v /etc/nginx/upstream.d/generated:/srv/upstream/generated \
+      -v /etc/nginx/upstream.d/generated:/srv/dockerx-upstream/generated \
       -t tcurdt/dockerx-upstream \
       --label org.vafer.upstream \
       --template /srv/dockerx-upstream/nginx.tpl \
